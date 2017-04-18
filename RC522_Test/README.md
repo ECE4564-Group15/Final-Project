@@ -1,4 +1,4 @@
-#Installation of Libs
+# Installation of Libs
 
 In order for this to run we need the SPI-py and MFRC522-python libraries installed.
 
@@ -14,15 +14,16 @@ In order for this to run we need the SPI-py and MFRC522-python libraries install
 5. Copy to library folder
     - `sudo cp MFRC522.py /usr/local/lib/python3.6/`
 
-#Running
+# Running
 
 Run the script with: `sudo ./test.py`
 
-#Pin Setup
+# Pin Setup
 
 Pin setup for the reader/writer is simple, but important.
 
 I followed this table for a reference:
+
 | Name | Pin # | Pin name   | Color  |
 |------|-------|------------|--------|
 | SDA  | 24    | GPIO8      | Green  |
