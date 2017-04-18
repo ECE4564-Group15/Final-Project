@@ -34,4 +34,4 @@ I followed this table for a reference:
 | GND  | Any   | Any Ground | Black  |
 | RST  | 22    | GPIO25     | White  |
 | 3.3V | 1     | 3V3        | Red    |
-| LED  | 15    | LED        | Orange |
+| LED  | 15    | GPIO22     | Orange |
