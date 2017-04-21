@@ -41,6 +41,7 @@ def get_credentials():
 
 def main():
     credentials = get_credentials()
+    print(type(credentials))
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
@@ -54,8 +55,27 @@ def main():
     if not events:
         print('No upcoming events found.')
     for event in events:
-        start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start, event['summary'])
+        print(event)
+        if event['status'] != "confirmed":
+            continue
+        for when in event.when:
+            try:
+                start_time = datetime.datetime.strptime(when.start_time.split(".")[0], "%Y-%m-%dT%H:%M:%S")
+                end_time = datetime.datetime.strptime(when.end_time.split(".")[0], "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                # ValueError happens on parsing error. Parsing errors
+                # usually happen for "all day" events since they have
+                # not time, but we do not care about this events.
+                continue
+            now = datetime.datetime.now()
+            if end_time > now:
+                for reminder in when.reminder:
+                    # We handle only reminders with method "alert"
+                    # and whose start time minus the reminder delay has passed
+                    if reminder.method == "alert" \
+                            and start_time - datetime.timedelta(0, 60 * int(reminder.minutes)) < now:
+                        # Build the notification
+                        print('%s: %s' % (event.title.text,event.content.text))
 
 
 if __name__ == '__main__':
