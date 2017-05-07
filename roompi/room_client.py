@@ -7,7 +7,8 @@ Last Modified: 5/7/2017
 
 This script provides the functions needed by the room_client
 """
-
+import time
+import os
 import UserClient
 import sys
 import threading
@@ -20,9 +21,9 @@ import RPi.GPIO as GPIO
 import datetime
 import pickle
 import logging
-from notifications import *
-
-
+# from notifications import *
+import pygame
+from gtts import gTTS
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
@@ -30,6 +31,16 @@ SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = 'client_id.json'
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 logging.basicConfig(filename='event.log', format='%(asctime)s %(message)s', level=logging.INFO)
+
+def audio_notification(sentence, filename):
+    tts = gTTS(text=sentence, lang='en')
+    tts.save(filename)
+    play_music(filename)
+
+def play_music(filename):
+   os.system("omxplayer %s" % filename) 
+   time.sleep(10)
+
 
 def getEvents(credentials):
     """
@@ -94,7 +105,7 @@ GPIO.setup(13, GPIO.OUT)
 def clienthandler(uid):
     userinfo = server.get_user_info(uid)
     if userinfo is None:
-        flashRedLED()
+       #  flashRedLED()
         audio_notification('Please register first', 'please_register.mp3')
         logging.info('{} tries to log in but has not registered yet'.format(uid))
         return
@@ -169,8 +180,6 @@ while True:
             del clients[uid]
 
         time.sleep(1)
-
-
 
 
 
