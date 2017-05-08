@@ -100,15 +100,7 @@ def flashLEDs(t):
 
 
 
-# Tracks Client Using Dictionary
-clients = {}
 
-# Logging events
-logging.basicConfig(filename='event.log', format='%(asctime)s %(message)s', level=logging.INFO)
-
-# Sever Connection Object
-server = UserClient.UserClient(sys.argv[1])
-server.connect()
 
 # Install signal handler--------------------------------------------------
 def exitclean():
@@ -192,26 +184,39 @@ def clienthandler(uid):
     #print("User {} has logged out".format(uid))
     return
 
-while True:
+if __name__ == "__main__":
 
-    # Scan for cards
-    (status, TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
+    # Tracks Client Using Dictionary
+    clients = {}
+
+    # Logging events
+    logging.basicConfig(filename='event.log', format='%(asctime)s %(message)s', level=logging.INFO)
+
+    # Sever Connection Object
+    server = UserClient.UserClient(sys.argv[1])
+    server.connect()
 
 
-    # Get the UID of the card
-    (status, ruid) = MIFAREReader.MFRC522_Anticoll()
+    while True:
 
-    # If we have the UID, continue
-    if status == MIFAREReader.MI_OK:
+        # Scan for cards
+        (status, TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
 
-        uid = '.'.join(str(v) for v in ruid).strip()
-        if uid not in clients:
-            clients[uid] = threading.Thread(name=uid, target=clienthandler, args=(uid, ))
-            clients[uid].start()
-        else:
-            del clients[uid]
-            print("User {} has just logged out".format(uid))
-        time.sleep(1)
+
+        # Get the UID of the card
+        (status, ruid) = MIFAREReader.MFRC522_Anticoll()
+
+        # If we have the UID, continue
+        if status == MIFAREReader.MI_OK:
+
+            uid = '.'.join(str(v) for v in ruid).strip()
+            if uid not in clients:
+                clients[uid] = threading.Thread(name=uid, target=clienthandler, args=(uid, ))
+                clients[uid].start()
+            else:
+                del clients[uid]
+                print("User {} has just logged out".format(uid))
+            time.sleep(1)
 
 
 
