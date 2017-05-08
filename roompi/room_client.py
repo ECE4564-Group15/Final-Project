@@ -38,7 +38,7 @@ def audio_notification(sentence, filename):
 
 def play_music(filename):
    os.system("omxplayer %s &> /dev/null" % filename) 
-   time.sleep(10)
+   #time.sleep(10)
 
 
 def getEvents(credentials):
@@ -61,9 +61,9 @@ def getEvents(credentials):
 
 def flashRedLED():
     GPIO.output(15, GPIO.HIGH)
-    time.sleep(0.75)
+    time.sleep(0.5)
     GPIO.output(15, GPIO.LOW)
-    time.sleep(0.75)
+    time.sleep(0.5)
 
 def flashGreenLED():
     GPIO.output(13, GPIO.HIGH)
@@ -71,11 +71,32 @@ def flashGreenLED():
     GPIO.output(13, GPIO.LOW)
     time.sleep(0.75)
 
+def flashLED(color):
+    if color == 'red':
+        GPIO.output(15, GPIO.HIGH)
+        time.sleep(0.5)
+        GPIO.output(15, GPIO.LOW)
+    elif color == 'green':
+        GPIO.output(11, GPIO.HIGH)
+        time.sleep(0.5)
+        GPIO.output(11, GPIO.LOW)
+    elif color == 'yellow':
+        GPIO.output(13, GPIO.HIGH)
+        time.sleep(0.5)
+        GPIO.output(13, GPIO.LOW)
+    time.sleep(0.5)
+    return
 
-def flashLEDs():
-    flashRedLED()
-    flashGreenLED()
-
+def flashLEDs(t):
+    now = datetime.datetime.now()
+    while (now+datetime.timedelta(seconds=t)) < datetime.datetime.now():
+        r = threading.Thread(target=flashLED, args=('red',))
+        y = threading.Thread(target=flashLED, args=('yellow',))
+        g = threading.Thread(target=flashLED, args=('green',))
+        r.run()
+        y.run()
+        g.run()
+        sleep(0.5)
 
 
 
@@ -106,12 +127,13 @@ signal.signal(signal.SIGTSTP, exitclean)
 MIFAREReader = MFRC522.MFRC522()
 GPIO.setup(15, GPIO.OUT)
 GPIO.setup(13, GPIO.OUT)
-
+GPIO.setup(11, GPIO.OUT)
 def clienthandler(uid):
     userinfo = server.get_user_info(uid)
+    color = userinfo['options']
     if userinfo is None:
         del clients[uid]
-        flashRedLED()
+        flashLED('red')
         audio_notification('                        Please register first                 ', 'please_register.mp3')
         logging.info('{} tries to log in but has not registered yet'.format(uid))
         return
@@ -154,15 +176,14 @@ def clienthandler(uid):
                 t = events[0][0].minute - now.minute
                 audio_notification("Attention, you have an event about {} in {} minutes".format(events[0][1], t), uid)
                 logging.info("Notify {} event in 5 min".format(uid))
-                while datetime.datetime.now() < (now + datetime.timedelta(seconds=15)):
-                    flashLEDs()
+                while datetime.datetime.now() < (now + datetime.timedelta(seconds=30)):
+                    flashLED(color)
             elif (now+datetime.timedelta(minutes=15)) >= events[0][0]:
                 t = events[0][0].minute - now.minute
                 logging.info("Notify {} event in {} min".format(uid, t))
                 audio_notification("Attention, you have an event about {} in {} minutes".format(events[0][1], t), uid)
-                while datetime.datetime.now() < (now + datetime.timedelta(seconds=15)):
-                    flashLEDs()                    
-        
+                while datetime.datetime.now() < (now + datetime.timedelta(seconds=30)):
+                    flashLED(color)
         time.sleep(120)
         events = getEvents(user_credentials)
         logging.info("Updating {}'s event list".format(uid))
