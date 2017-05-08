@@ -32,12 +32,12 @@ APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 logging.basicConfig(filename='event.log', format='%(asctime)s %(message)s', level=logging.INFO)
 
 def audio_notification(sentence, filename):
-    tts = gTTS(text=sentence, lang='en')
+    tts = gTTS(text=sentence+'m', lang='en')
     tts.save(filename)
     play_music(filename)
 
 def play_music(filename):
-   os.system("omxplayer %s" % filename) 
+   os.system("omxplayer %s &> /dev/null" % filename) 
    time.sleep(10)
 
 
@@ -51,11 +51,12 @@ def getEvents(credentials):
     service = discovery.build('calendar', 'v3', http=http)
 
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-    print('Getting the upcoming 10 events')
+    #print('Getting the upcoming 10 events')
     eventsResult = service.events().list(
         calendarId='primary', timeMin=now, maxResults=10, singleEvents=True,
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
+    #print(events)
     return events
 
 def flashRedLED():
@@ -109,8 +110,9 @@ GPIO.setup(13, GPIO.OUT)
 def clienthandler(uid):
     userinfo = server.get_user_info(uid)
     if userinfo is None:
+        del clients[uid]
         flashRedLED()
-        audio_notification('Please register first', 'please_register.mp3')
+        audio_notification('                        Please register first                 ', 'please_register.mp3')
         logging.info('{} tries to log in but has not registered yet'.format(uid))
         return
     # print('User Info: ', userinfo)
@@ -131,6 +133,10 @@ def clienthandler(uid):
 
     events = getEvents(user_credentials)
     while uid in clients:
+        if clients[uid].ident != threading.get_ident():
+            #print(clients[uid].ident, threading.get_ident())
+            #print("exit")
+            return
         if events:
             logging.info("{}'s event has been collected".format(uid))
             for i in range(len(events)):
@@ -138,10 +144,13 @@ def clienthandler(uid):
                 events[i] = (e, events[i]['summary'])
             now = datetime.datetime.now()
             for item in events:
-                if now.minute - item.minute > 0:
+                #print(item)
+                if now.minute - item[0].minute > 0:
                     events.remove(item)
 
             if (now+datetime.timedelta(minutes=5)) >= events[0][0]:
+                #print (now+datetime.timedelta(minutes=5))
+                #print (events[0][0])
                 t = events[0][0].minute - now.minute
                 audio_notification("Attention, you have an event about {} in {} minutes".format(events[0][1], t), uid)
                 logging.info("Notify {} event in 5 min".format(uid))
@@ -158,7 +167,8 @@ def clienthandler(uid):
         events = getEvents(user_credentials)
         logging.info("Updating {}'s event list".format(uid))
 
-    logging.info("User {} has logged out".format(uid))
+    #logging.info("User {} has logged out".format(uid))
+    #print("User {} has logged out".format(uid))
     return
 
 while True:
@@ -176,10 +186,10 @@ while True:
         uid = '.'.join(str(v) for v in ruid).strip()
         if uid not in clients:
             clients[uid] = threading.Thread(name=uid, target=clienthandler, args=(uid, ))
-            clients[uid].run()
+            clients[uid].start()
         else:
             del clients[uid]
-
+            print("User {} has just logged out".format(uid))
         time.sleep(1)
 
 
