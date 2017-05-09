@@ -68,10 +68,10 @@ def sign_up(uid, c):
     finished = False
     color = None
 
-    print('We provide LED notification color in red or green')
+    print('We provide LED notification color in red yellow or green')
     while (finished == False):
         color = input('Choose your favorite one: ')
-        if (color == 'red' or color == 'green'):
+        if (color == 'red' or color == 'green' or color == 'yellow'):
             finished = True
         else:
             print('Sorry, we currently do not provide ', color , 'as LED light color.')
