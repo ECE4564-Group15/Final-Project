@@ -89,14 +89,14 @@ def flashLED(color):
 
 def flashLEDs(t):
     now = datetime.datetime.now()
-    while (now+datetime.timedelta(seconds=t)) < datetime.datetime.now():
+    while (now+datetime.timedelta(seconds=t)) > datetime.datetime.now():
         r = threading.Thread(target=flashLED, args=('red',))
         y = threading.Thread(target=flashLED, args=('yellow',))
         g = threading.Thread(target=flashLED, args=('green',))
         r.run()
         y.run()
         g.run()
-        sleep(0.5)
+        #time.sleep(0.5)
 
 
 
@@ -120,6 +120,7 @@ MIFAREReader = MFRC522.MFRC522()
 GPIO.setup(15, GPIO.OUT)
 GPIO.setup(13, GPIO.OUT)
 GPIO.setup(11, GPIO.OUT)
+
 def clienthandler(uid):
     userinfo = server.get_user_info(uid)
     color = userinfo['options']
@@ -129,6 +130,7 @@ def clienthandler(uid):
         audio_notification('                        Please register first                 ', 'please_register.mp3')
         logging.info('{} tries to log in but has not registered yet'.format(uid))
         return
+    flashLED('green')
     # print('User Info: ', userinfo)
     logging.info('{} has logged in'.format(uid))
     try:
