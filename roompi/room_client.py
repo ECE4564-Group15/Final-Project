@@ -123,7 +123,7 @@ GPIO.setup(11, GPIO.OUT)
 
 def clienthandler(uid):
     userinfo = server.get_user_info(uid)
-    color = userinfo['options']
+    #color = userinfo['options']
     if userinfo is None:
         del clients[uid]
         flashLED('red')
@@ -131,6 +131,7 @@ def clienthandler(uid):
         logging.info('{} tries to log in but has not registered yet'.format(uid))
         return
     flashLED('green')
+    color = userinfo['options']
     # print('User Info: ', userinfo)
     logging.info('{} has logged in'.format(uid))
     try:
