@@ -152,7 +152,7 @@ def clienthandler(uid):
     while uid in clients:
         if clients[uid].ident != threading.get_ident():
             #print(clients[uid].ident, threading.get_ident())
-            #print("exit")
+            print("exit")
             return
         if events:
             logging.info("{}'s event has been collected".format(uid))
@@ -161,7 +161,7 @@ def clienthandler(uid):
                 events[i] = (e, events[i]['summary'])
             now = datetime.datetime.now()
             for item in events:
-                #print(item)
+                print(item)
                 if now.minute - item[0].minute > 0:
                     events.remove(item)
 
