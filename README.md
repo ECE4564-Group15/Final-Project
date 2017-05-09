@@ -25,5 +25,3 @@ Member functions:
  - `update_user(uid,options,credentials)`: Updates the user entry. Returns the success of the operation.
  - `delete_user(uid)`: Deletes the user entry. Returns the success of the operation.
 
-## TODO:
-Find a good idea on the final project for now.
